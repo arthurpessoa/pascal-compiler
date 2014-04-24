@@ -30,18 +30,18 @@ args ::= '(' dcls ')' | '(' ')'
 compstmt ::= BEGIN stmts END  
 stmts ::= stmt | stmts ';' stmt  
 stmt ::= elstmt  
-	| IF expr THEN stmt [ ELSE stmt ] ENDIF  
-	| WHILE expr DO stmt ENDWHILE    
+    | IF expr THEN stmt [ ELSE stmt ] ENDIF  
+    | WHILE expr DO stmt ENDWHILE    
     
 elstmt ::= vbl ':=' expr  
-	| RETURN expr /* in a function */  
-	| RETURN      /* in a procedure */  
-	| procfunc 	  /* should be procedure */  
-	| compstmt  
-	| READ '(' vbllist ')'    
-	| WRITE '(' exprlist ')'  
-	| WRITELN '(' exprlist ')'  
-	| WRITELN '(' ')'  
+    | RETURN expr /* in a function */  
+    | RETURN      /* in a procedure */  
+    | procfunc       /* should be procedure */  
+    | compstmt  
+    | READ '(' vbllist ')'    
+    | WRITE '(' exprlist ')'  
+    | WRITELN '(' exprlist ')'  
+    | WRITELN '(' ')'  
 
 vbl ::= id | id '[' expr ']'  
 vbllist ::= vbl | vbllist ',' vbl  
@@ -53,9 +53,9 @@ expr ::= simexp | simexp relop expr
 simexp ::= term | unary term | simexp addop term  
 term ::= factor | term mulop factor  
 factor ::= vbl  
-	| num  
-	| '(' expr ')'  
-	| procfunc /* should be FUNCTION */  
+    | num  
+    | '(' expr ')'  
+    | procfunc /* should be FUNCTION */  
   
   
 pid ::=  letter { letter | digit }  
