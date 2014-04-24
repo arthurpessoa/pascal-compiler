@@ -1,5 +1,6 @@
-Compilador2 - Especificação
+﻿Compilador2 - Especificação
 ===========
+
 
 Esta gramática é uma versão simples do pascal baseada na gramática do livro do Aho, Sethi and Ullman.
 Você deve levar em consideração:
