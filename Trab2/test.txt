@@ -1,0 +1,7 @@
+PROGRAM teste;
+{Por enquanto só temos declaração de variáveis}
+Var 
+x,y,z : integer;
+re : char;
+vetor : ARRAY [0..10] OF integer;
+.
