@@ -6,7 +6,7 @@ abstract public class Type {
         this.name = name;
     }
     
-    public static Type stringType = new StringType();
+    public static Type stringType  = new StringType();
     public static Type integerType = new IntegerType();
     public static Type charType    = new CharType();
     public static Type realType    = new RealType();

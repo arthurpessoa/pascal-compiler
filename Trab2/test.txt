@@ -1,7 +1,9 @@
 PROGRAM teste;
-{Por enquanto só temos declaração de variáveis}
-Var 
+Var
 x,y,z : integer;
 re : char;
-vetor : ARRAY [0..10] OF integer;
+vetor : ARRAY [3..10] OF integer;
+BEGIN
+write(x);
+END
 .

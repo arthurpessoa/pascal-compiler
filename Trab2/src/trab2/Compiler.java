@@ -123,25 +123,29 @@ public class Compiler {
         }
        return null;
      }
-     
+     //body ::= dclpart compstmt | compstmt
      private Body body(){
          
          Dclpart dclpart = dclpart();
-         Body body = new Body(dclpart);
+         CompositeStatement compstmt = compstmt();
+         Body body = new Body(dclpart, compstmt);
          return body;
      }
+     //dclpart ::= VAR dcls | subdcls | VAR dcls subdcls
      private Dclpart dclpart(){
          Dcls dcls = null;
+         Subdcls subdcls = null;
          lexer.nextToken();
          
          if(lexer.token == Symbol.VAR){
              lexer.nextToken();
              dcls = dcls();
+             subdcls = subdcls();
          }
-         Dclpart dclpart = new Dclpart(dcls,null);
+         Dclpart dclpart = new Dclpart(dcls,subdcls);
          return dclpart;
      }
-     
+     //dcls ::= dcl | dcls dcl
      private Dcls dcls(){
         ArrayList<Variable> varList = new ArrayList<Variable>();
         
@@ -152,7 +156,7 @@ public class Compiler {
         Dcls dcls = new Dcls(varList);
         return dcls;
      }
-     
+     //dcl ::= idlist ':' type ';'
      private void dcl(ArrayList<Variable> varList){
          
          ArrayList<Variable> lastVarList = new ArrayList<>();
@@ -222,12 +226,15 @@ public class Compiler {
             case INTEGER :
               result = Type.integerType;
               break;
-            case BOOLEAN :
-              result = Type.booleanType;
-              break;
             case CHAR :
               result = Type.charType;
               break;
+            case REAL:
+                result = Type.realType;
+                break;
+            case STRING:
+                result = Type.stringType;
+                break;
             default :
                 System.out.println("Valor :" +lexer.getStringValue());
               error.signal("Type expected");
@@ -273,5 +280,173 @@ public class Compiler {
          lexer.nextToken();
          size = size2-size1;
      }
+    //compstmt ::= BEGIN stmts END
+    //stmts ::= stmt | stmts ';' stmt
+    private CompositeStatement compstmt() {
+        
+       
+        if(lexer.token != Symbol.BEGIN){
+            error.signal("BEGIN não encontrado");
+        }
+        
+        lexer.nextToken();
+        StatementList st = stmts();
+       
+        if(lexer.token != Symbol.END){
+            error.signal("END não encontrado");
+        }
+        lexer.nextToken();
+        return new CompositeStatement(st);
+    }
+
+    private Subdcls subdcls() {
+       return null;
+    }
+
+    private StatementList stmts() {
+        Symbol tk=lexer.token;
+        Statement astatement;
+        ArrayList<Statement> v = new ArrayList<Statement>();
+        
+        while(tk != Symbol.END && tk!=Symbol.ELSE && tk!=Symbol.ENDIF){
+            astatement = null;
+            try {
+                // statement() should return null in a serious error
+              astatement = stmt();
+            } catch (  StatementException e ) {
+                lexer.skipToNextStatement();
+            }
+            if(astatement != null){
+                v.add(astatement);
+                if(lexer.token!=Symbol.SEMICOLON){
+                    error.show("; faltando");
+                    lexer.skipPunctuation();
+                }else{
+                    lexer.nextToken();
+                }
+            }
+            tk = lexer.token;
+        }
+        return new StatementList(v);
+    }
+    //stmt ::= elstmt
+//	| IF expr THEN stmt [ ELSE stmt ] ENDIF
+//	| WHILE expr DO stmt ENDWHILE
+    private Statement stmt() throws StatementException{
+        switch(lexer.token){
+            case WRITE:
+                return writeStatement();
+            default:
+                error.signal("Erro");
+                break;
+        }
+        return null;
+    }
+
+    private WriteStatement writeStatement() {
+        lexer.nextToken();
+        if(lexer.token != Symbol.LEFTPAR){
+            error.show("'(' faltando");
+            lexer.skipBraces();
+        }else{
+            lexer.nextToken();
+        }
+        ExprList e = exprList();
+        if(lexer.token != Symbol.RIGHTPAR){
+            error.show("')' faltando");
+            lexer.skipBraces();
+            lexer.skipToNextStatement();
+            return null;
+        }else{
+            lexer.nextToken();
+            return new WriteStatement(e);
+        }
+        
+    }
+    //exprlist ::= expr | exprlist ',' expr
+    private ExprList exprList() {
+        ExprList exList = new ExprList();
+        Expr e = null;
+        while(lexer.token != Symbol.RIGHTPAR && lexer.token != Symbol.RIGHTSQBRACKET){
+            e = expr();
+            exList.addElement(e); 
+            if(lexer.token != Symbol.COLON && lexer.token != Symbol.RIGHTPAR && lexer.token !=Symbol.RIGHTSQBRACKET){
+                System.out.println("Valor do token = "+lexer.token.toString());
+                error.signal("Use ',' para separar expressões");
+            }     
+        }
+        
+        return exList;
+    }
+//expr ::= simexp | simexp relop expr
+//simexp ::= term | unary term | simexp addop term
+//term ::= factor | term mulop factor
+//factor ::= vbl
+//	| num
+//	| '(' expr ')'
+//	| procfunc /* should be FUNCTION */
+//relop ::=  '=' | '<' | '>' | '<=' | '>=' | '<>'
+    private Expr expr() {
+        Expr left, right;
+        left = simexp();
+        Symbol s;
+        if(lexer.token == Symbol.ASSIGN || lexer.token == Symbol.LT
+                || lexer.token == Symbol.GT || lexer.token == Symbol.LE
+                || lexer.token == Symbol.GE || lexer.token == Symbol.NEQ){
+            s = lexer.token;
+            lexer.nextToken();
+            right = expr();
+            left = new CompositeExpr(left, s, right);   
+        }
+        return left;
+    }
+//simexp ::= term | unary term | simexp addop term
+//term ::= factor | term mulop factor
+//addop ::=  '+' | '-' | OR  /* + também representa concatenação de string */
+//mulop ::= '*' | '/' | AND | MOD | DIV
+//unary ::=  '+' | '-' | NOT
+    private Expr simexp() {
+        Expr left;
+        if(lexer.token == Symbol.PLUS || lexer.token == Symbol.MINUS || lexer.token == Symbol.NOT){
+            Symbol s = lexer.token;
+            lexer.nextToken();
+            Expr right = term();
+            return new CompositeExpr(null,s,right);
+        }else{
+            left = term();        
+        }
+        return left;
+    }
+//term ::= factor | term mulop factor
+//addop ::=  '+' | '-' | OR  /* + também representa concatenação de string */
+//mulop ::= '*' | '/' | AND | MOD | DIV
+//unary ::=  '+' | '-' | NOT
+//factor ::= vbl
+//	| num
+//	| '(' expr ')'
+//	| procfunc /* should be FUNCTION */
+    private Expr term() {
+        
+        if(lexer.token == Symbol.NUMBER){
+            NumberExpr n = new NumberExpr(lexer.getNumberValue());
+            lexer.nextToken();
+            return n;
+        }
+        if(lexer.token == Symbol.IDENT){
+            StringExpr e = null;
+            if( symbolTable.getInLocal(lexer.token)==null){
+                e = new StringExpr(lexer.getStringValue().toString());
+            }
+            lexer.nextToken();
+            if(lexer.token == Symbol.RIGHTPAR){
+                return e;
+            }else{
+                error.show("')' faltando");
+            }
+            
+        }
+        return null;
+    }
 }
+
  

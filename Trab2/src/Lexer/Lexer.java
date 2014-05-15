@@ -125,6 +125,7 @@ public class Lexer {
         else
           if ( input[tokenPos] == '{' ) {
                 // comment found
+              System.out.println("COMENTARIO ENCONTRADO");
                while ( input[tokenPos] != '\0'&& input[tokenPos] != '}' )
                  tokenPos++;
                nextToken();

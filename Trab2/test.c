@@ -6,5 +6,6 @@ void teste() {
    int y ;
    int z ;
    char re ;
-   int vetor[10];
+   int vetor[7];
+   printf("%s\n", 'x' );
 }

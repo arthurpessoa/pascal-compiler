@@ -10,13 +10,13 @@ public class CompositeStatement extends Statement {
     }
     
     public void genC( PW pw ) {
-        pw.println("{");
+       
         if ( statementList != null ) {
-           pw.add();
+           
            statementList.genC(pw);
-           pw.sub();
+          
         }
-        pw.println("}");
+       
     }
     
     public StatementList getStatementList() { return statementList; }

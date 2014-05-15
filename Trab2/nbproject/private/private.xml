@@ -3,25 +3,15 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/RealType.java</file>
+            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/ExprList.java</file>
+            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/CompositeStatement.java</file>
+            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/StringExpr.java</file>
             <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Body.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Variable.java</file>
+            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/StringType.java</file>
             <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/Lexer/Symbol.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Parameter.java</file>
+            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/WriteStatement.java</file>
             <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Expr.java</file>
             <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/trab2/Compiler.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/BooleanType.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/LocalVarList.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Type.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/IntegerType.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Dcls.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/AssignmentStatement.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/ParamList.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/CompositeExpr.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/StringType.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/BooleanExpr.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/WriteStatement.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/CharType.java</file>
             <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/Lexer/Lexer.java</file>
         </group>
     </open-files>

@@ -12,14 +12,17 @@ package AST;
  */
 public class Body {
     
-    public Body (Dclpart dclpart){
+    public Body (Dclpart dclpart, CompositeStatement compstmt){
         this.dclpart = dclpart;
+        this.compstmt = compstmt;
     }
     
     public void genC( PW pw ) {
         dclpart.genC(pw);
+        compstmt.genC(pw);
     }
     
     private Dclpart dclpart;
+    private CompositeStatement compstmt;
       
 }

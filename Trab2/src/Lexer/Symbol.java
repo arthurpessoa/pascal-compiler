@@ -41,7 +41,7 @@ public enum Symbol {
       LE("<="),
       GT(">"),
       GE(">="),
-      NEQ("!="),
+      NEQ("<>"),
       EQ("=="),
       ASSIGN("="),
       LEFTPAR("("),
