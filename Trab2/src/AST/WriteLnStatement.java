@@ -1,8 +1,8 @@
 package AST;
 
-public class WriteStatement extends Statement {
+public class WriteLnStatement extends Statement {
     
-    public WriteStatement( ExprList expr ) {
+    public WriteLnStatement( ExprList expr ) {
         this.expr = expr;
     }
  
@@ -15,22 +15,20 @@ public class WriteStatement extends Statement {
         for(i=0;i<size;i++){
             e = expr.getElement(i);
             if ( e.getType() == Type.charType ) {
-                pw.print("printf(\"%c\", ");
+                pw.print("printf(\"%c\\n\", ");
             }else{
                 if(e.getType() == Type.stringType){
-                    pw.print("printf(\"%s\", ");
+                    pw.print("printf(\"%s\\n\", ");
                 }else{
                     if(e.getType() == Type.integerType)
-                        pw.print("printf(\"%d\", ");
+                        pw.print("printf(\"%d\\n\", ");
                     else
-                        pw.print("printf(\"%f\", ");
+                        pw.print("printf(\"%f\\n\", ");
                 }   
             }
             e.genC(pw, false);
         }
         pw.out.println(" );");
-    }
-    
-    
+    }    
     private ExprList expr;
 }

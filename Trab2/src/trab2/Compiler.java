@@ -336,6 +336,8 @@ public class Compiler {
         switch(lexer.token){
             case WRITE:
                 return writeStatement();
+            case WRITELN:
+                return writeLnStatement();
             default:
                 error.signal("Erro");
                 break;
@@ -360,6 +362,27 @@ public class Compiler {
         }else{
             lexer.nextToken();
             return new WriteStatement(e);
+        }
+        
+    }
+    
+     private WriteLnStatement writeLnStatement() {
+        lexer.nextToken();
+        if(lexer.token != Symbol.LEFTPAR){
+            error.show("'(' faltando");
+            lexer.skipBraces();
+        }else{
+            lexer.nextToken();
+        }
+        ExprList e = exprList();
+        if(lexer.token != Symbol.RIGHTPAR){
+            error.show("')' faltando");
+            lexer.skipBraces();
+            lexer.skipToNextStatement();
+            return null;
+        }else{
+            lexer.nextToken();
+            return new WriteLnStatement(e);
         }
         
     }
