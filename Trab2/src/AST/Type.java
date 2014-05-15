@@ -10,7 +10,7 @@ abstract public class Type {
     public static Type integerType = new IntegerType();
     public static Type charType    = new CharType();
     public static Type realType    = new RealType();
-    
+    public static Type booleanType    = new BooleanType();
     public String getName() {
         return name;
     }
