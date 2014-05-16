@@ -29,6 +29,8 @@ public class WriteLnStatement extends Statement {
             e.genC(pw, false);
         }
         pw.out.println(" );");
-    }    
+    }
+    
+    
     private ExprList expr;
 }

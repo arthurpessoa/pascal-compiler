@@ -2,7 +2,7 @@ package AST;
 
 public class IfStatement extends Statement {
     
-    public IfStatement( Expr expr, StatementList thenPart, StatementList elsePart ) {
+    public IfStatement( Expr expr, Statement thenPart, Statement elsePart ) {
         this.expr = expr;
         this.thenPart = thenPart;
         this.elsePart = elsePart;
@@ -29,5 +29,5 @@ public class IfStatement extends Statement {
     }
     
     private Expr expr;
-    private StatementList thenPart, elsePart;
+    private Statement thenPart, elsePart;
 }

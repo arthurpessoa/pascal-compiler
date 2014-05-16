@@ -1,8 +1,8 @@
 package AST;
 
-public class StringExpr extends Expr {
+public class SentenceExpr extends Expr {
     
-    public StringExpr( String value ) {
+    public SentenceExpr( String value ) {
         this.value = value; 
     }
     
@@ -15,7 +15,7 @@ public class StringExpr extends Expr {
     }
     
     public Type getType() {
-        return Type.stringType;
+        return Type.sentenceType;
     }
     
     private String value;

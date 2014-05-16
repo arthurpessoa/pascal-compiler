@@ -5,5 +5,11 @@ re : char;
 vetor : ARRAY [3..10] OF integer;
 BEGIN
 write(x);
+x := 10;
+if x>=y then
+write('verdadeiro');
+else
+write('falso');
+endif
 END
 .

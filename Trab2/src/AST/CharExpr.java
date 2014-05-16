@@ -2,15 +2,15 @@ package AST;
 
 public class CharExpr extends Expr {
     
-    public CharExpr( char value ) {
+    public CharExpr( String value ) {
         this.value = value; 
     }
     
     public void genC( PW pw, boolean putParenthesis  ) {
-        pw.out.print("'" + value + "'");
+        pw.out.print(value);
     }
     
-    public char getValue() {
+    public String getValue() {
         return value;
     }
     
@@ -18,5 +18,5 @@ public class CharExpr extends Expr {
         return Type.charType;
     }
     
-    private char value;
+    private String value;
 }

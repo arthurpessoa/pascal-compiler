@@ -42,8 +42,8 @@ public enum Symbol {
       GT(">"),
       GE(">="),
       NEQ("<>"),
-      EQ("=="),
-      ASSIGN("="),
+      EQ("="),
+      ASSIGN(":="),
       LEFTPAR("("),
       RIGHTPAR(")"),
       SEMICOLON(";"),
@@ -58,7 +58,8 @@ public enum Symbol {
       CURLYLEFTBRACE("{"),
       CURLYRIGHTBRACE("}"),
       LEFTSQBRACKET("["),
-      RIGHTSQBRACKET("]"),;
+      RIGHTSQBRACKET("]"),
+      ASPAS("'");
       
       Symbol(String name) {
           this.name = name;

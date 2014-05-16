@@ -43,6 +43,7 @@
 //simexp ::= term | unary term | simexp addop term
 //term ::= factor | term mulop factor
 //factor ::= vbl
+//      |''' . ''' *qualquer conjunto de caracteres entre ' ' (aspas simples).
 //	| num
 //	| '(' expr ')'
 //	| procfunc /* should be FUNCTION */
@@ -112,6 +113,7 @@ public class Compiler {
 
             if(lexer.token == Symbol.SEMICOLON){
                  program = new Program(programName, body());
+                 //lexer.nextToken();
             }else{
                 error.signal("Simbolo ';' faltando");
             }
@@ -128,6 +130,7 @@ public class Compiler {
          
          Dclpart dclpart = dclpart();
          CompositeStatement compstmt = compstmt();
+         //lexer.nextToken();
          Body body = new Body(dclpart, compstmt);
          return body;
      }
@@ -140,8 +143,8 @@ public class Compiler {
          if(lexer.token == Symbol.VAR){
              lexer.nextToken();
              dcls = dcls();
-             subdcls = subdcls();
          }
+         subdcls = subdcls();
          Dclpart dclpart = new Dclpart(dcls,subdcls);
          return dclpart;
      }
@@ -283,15 +286,11 @@ public class Compiler {
     //compstmt ::= BEGIN stmts END
     //stmts ::= stmt | stmts ';' stmt
     private CompositeStatement compstmt() {
-        
-       
         if(lexer.token != Symbol.BEGIN){
             error.signal("BEGIN não encontrado");
-        }
-        
+        } 
         lexer.nextToken();
         StatementList st = stmts();
-       
         if(lexer.token != Symbol.END){
             error.signal("END não encontrado");
         }
@@ -304,47 +303,71 @@ public class Compiler {
     }
 
     private StatementList stmts() {
-        Symbol tk=lexer.token;
+        Symbol tk=null;
         Statement astatement;
-        ArrayList<Statement> v = new ArrayList<Statement>();
+        ArrayList<Statement> v = new ArrayList<>();
         
-        while(tk != Symbol.END && tk!=Symbol.ELSE && tk!=Symbol.ENDIF){
-            astatement = null;
-            try {
-                // statement() should return null in a serious error
-              astatement = stmt();
-            } catch (  StatementException e ) {
-                lexer.skipToNextStatement();
-            }
+        while ( (tk = lexer.token) != Symbol.END && 
+                tk != Symbol.ELSE &&
+                tk != Symbol.ENDIF) {
+            astatement = stmt();
             if(astatement != null){
-                v.add(astatement);
-                if(lexer.token!=Symbol.SEMICOLON){
-                    error.show("; faltando");
+                v.add(astatement);  
+                if(lexer.token!=Symbol.SEMICOLON && lexer.token!=Symbol.END && lexer.token!=Symbol.ENDIF){
+                    error.signal("; faltando "+lexer.getStringValue());
                     lexer.skipPunctuation();
                 }else{
-                    lexer.nextToken();
+                    if(lexer.token!=Symbol.END)
+                     lexer.nextToken();
                 }
-            }
-            tk = lexer.token;
+            }   
         }
         return new StatementList(v);
     }
     //stmt ::= elstmt
 //	| IF expr THEN stmt [ ELSE stmt ] ENDIF
 //	| WHILE expr DO stmt ENDWHILE
-    private Statement stmt() throws StatementException{
+    private Statement stmt(){
         switch(lexer.token){
+            case IF:
+                return ifStmt();
+            case WHILE:
+                return whileStmt();
+            default:
+                return elstmt();
+        }
+        
+    }
+    private Statement elstmt(){
+        
+        switch(lexer.token){
+            case BEGIN:
+                return compstmt();
             case WRITE:
                 return writeStatement();
-            case WRITELN:
-                return writeLnStatement();
+            case READ:
+                return readStatement();
+            case IDENT:
+                Variable v = (Variable ) symbolTable.getInLocal( lexer.getStringValue() );
+                if(v!=null){
+                    lexer.nextToken();
+                    if(lexer.token == Symbol.ASSIGN){ 
+                        lexer.nextToken();
+                        Expr e = expr();
+                        //lexer.nextToken();
+                        if(e.getType() == v.getType())
+                            return new AssignmentStatement(v,e);
+                    }
+                }else{
+                    error.signal("Variavel não declarada");
+                }
+                break;
             default:
-                error.signal("Erro");
+                error.signal(lexer.getStringValue()+" Comando inválido");
                 break;
         }
         return null;
     }
-
     private WriteStatement writeStatement() {
         lexer.nextToken();
         if(lexer.token != Symbol.LEFTPAR){
@@ -354,6 +377,7 @@ public class Compiler {
             lexer.nextToken();
         }
         ExprList e = exprList();
+        
         if(lexer.token != Symbol.RIGHTPAR){
             error.show("')' faltando");
             lexer.skipBraces();
@@ -365,39 +389,22 @@ public class Compiler {
         }
         
     }
-    
-     private WriteLnStatement writeLnStatement() {
-        lexer.nextToken();
-        if(lexer.token != Symbol.LEFTPAR){
-            error.show("'(' faltando");
-            lexer.skipBraces();
-        }else{
-            lexer.nextToken();
-        }
-        ExprList e = exprList();
-        if(lexer.token != Symbol.RIGHTPAR){
-            error.show("')' faltando");
-            lexer.skipBraces();
-            lexer.skipToNextStatement();
-            return null;
-        }else{
-            lexer.nextToken();
-            return new WriteLnStatement(e);
-        }
-        
-    }
     //exprlist ::= expr | exprlist ',' expr
     private ExprList exprList() {
         ExprList exList = new ExprList();
         Expr e = null;
-        while(lexer.token != Symbol.RIGHTPAR && lexer.token != Symbol.RIGHTSQBRACKET){
+        do{
             e = expr();
+            //lexer.nextToken();
             exList.addElement(e); 
-            if(lexer.token != Symbol.COLON && lexer.token != Symbol.RIGHTPAR && lexer.token !=Symbol.RIGHTSQBRACKET){
-                System.out.println("Valor do token = "+lexer.token.toString());
+           
+            if(lexer.token != Symbol.COMMA && lexer.token != Symbol.RIGHTPAR && lexer.token !=Symbol.RIGHTSQBRACKET){
+                System.out.println("Valor do token = "+lexer.getStringValue());
                 error.signal("Use ',' para separar expressões");
-            }     
-        }
+            }  
+            if(lexer.token == Symbol.COMMA)
+                lexer.nextToken();
+        }while(lexer.token != Symbol.RIGHTPAR && lexer.token != Symbol.RIGHTSQBRACKET && lexer.token != Symbol.SEMICOLON);
         
         return exList;
     }
@@ -412,8 +419,9 @@ public class Compiler {
     private Expr expr() {
         Expr left, right;
         left = simexp();
+        lexer.nextToken();
         Symbol s;
-        if(lexer.token == Symbol.ASSIGN || lexer.token == Symbol.LT
+        if(lexer.token == Symbol.EQ || lexer.token == Symbol.LT
                 || lexer.token == Symbol.GT || lexer.token == Symbol.LE
                 || lexer.token == Symbol.GE || lexer.token == Symbol.NEQ){
             s = lexer.token;
@@ -448,27 +456,81 @@ public class Compiler {
 //	| num
 //	| '(' expr ')'
 //	| procfunc /* should be FUNCTION */
+//vbl ::= id | id '[' expr ']'
+//vbllist ::= vbl | vbllist ',' vbl
     private Expr term() {
-        
         if(lexer.token == Symbol.NUMBER){
             NumberExpr n = new NumberExpr(lexer.getNumberValue());
-            lexer.nextToken();
             return n;
         }
         if(lexer.token == Symbol.IDENT){
-            StringExpr e = null;
-            if( symbolTable.getInLocal(lexer.token)==null){
-                e = new StringExpr(lexer.getStringValue().toString());
+            Expr x = null;
+            Symbol s = null;
+            Variable v = (Variable ) symbolTable.getInLocal( lexer.getStringValue() );
+            if( v ==null){
+                error.signal("Variavel "+lexer.getStringValue() +" não declarada");
             }
-            lexer.nextToken();
-            if(lexer.token == Symbol.RIGHTPAR){
-                return e;
-            }else{
-                error.show("')' faltando");
+            Type t = v.getType();          
+            if(t == Type.integerType){
+                x = new IntExpr(lexer.getStringValue());  
             }
+            if(t == Type.stringType){
+                x = new StringExpr(lexer.getStringValue());  
+            }
+            if(t == Type.charType)
+                x = new CharExpr(lexer.getStringValue());
+            return x;
             
         }
+        if(lexer.token == Symbol.ASPAS){
+            lexer.nextToken();
+            SentenceExpr s = null;
+            s = new SentenceExpr(lexer.getStringValue());
+            lexer.nextToken();
+            if(lexer.token == Symbol.ASPAS){      
+                //lexer.nextToken();
+                return s;
+            }
+            else
+                error.signal("Aspas não fechadas");
+        }
         return null;
+    }
+    //IF expr THEN stmt [ ELSE stmt ] ENDIF
+    private Statement ifStmt() {
+        if(lexer.token == Symbol.IF){
+            lexer.nextToken();
+            Expr e = expr();
+            //lexer.nextToken();
+            if(lexer.token == Symbol.THEN){
+                lexer.nextToken();
+                Statement sThen = stmt();
+                lexer.nextToken();
+                //lexer.nextToken();
+                Statement sElse = null;
+                if(lexer.token == Symbol.ELSE){
+                    lexer.nextToken();
+                    sElse = stmt();
+                    lexer.nextToken();                    
+                }
+                if(lexer.token == Symbol.ENDIF){
+                    return new IfStatement(e,sThen,sElse);
+                }else{
+                    error.signal("Faltando a expressão ENDIF");
+                }
+            }else{
+                error.signal("Faltando a expressão THEN");
+            }
+        }
+        return null;
+    }
+
+    private Statement whileStmt() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Statement readStatement() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
 

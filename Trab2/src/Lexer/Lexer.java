@@ -103,6 +103,8 @@ public class Lexer {
         keywordsTable.put( "STRING", Symbol.STRING );
         keywordsTable.put( "NOT", Symbol.NOT );
         keywordsTable.put("OF", Symbol.OF);
+        keywordsTable.put("ASPAS", Symbol.ASPAS);
+        keywordsTable.put("CHARACTER", Symbol.CHARACTER);
        
      }
 
@@ -202,12 +204,7 @@ public class Lexer {
                         token = Symbol.GT;
                       break;
                     case '=' :
-                      if ( input[tokenPos] == '=' ) {
-                        tokenPos++;
-                        token = Symbol.EQ;
-                      }
-                      else 
-                        token = Symbol.ASSIGN;
+                      token = Symbol.EQ;
                       break;
                     case '(' :
                       token = Symbol.LEFTPAR;
@@ -222,21 +219,19 @@ public class Lexer {
                       token = Symbol.SEMICOLON;
                       break;
                     case ':' :
-                      token = Symbol.COLON;
+                        if ( input[tokenPos] == '=' ) {
+                        tokenPos++;
+                        token = Symbol.ASSIGN;
+                      }else{
+                        token = Symbol.COLON;
+                        }
                       break;
                     case '.':
                         token = Symbol.ENDPROG;
                         break;
                     case '\'' : 
-                      token = Symbol.CHARACTER;
-                      charValue = input[tokenPos];
-                      tokenPos++;
-                      if ( input[tokenPos] != '\'' ) 
-                        error.signal("Illegal literal character" + input[tokenPos-1] );
-                      tokenPos++;
-                      break;
-                      // the next four symbols are not used by the language 
-                      // but are returned to help the error treatment
+                        token = Symbol.ASPAS;
+                        break;
                     case '{' : 
                       token = Symbol.CURLYLEFTBRACE;
                       break;
@@ -249,6 +244,7 @@ public class Lexer {
                     case ']' :
                       token = Symbol.RIGHTSQBRACKET;
                       break;
+                  
                     default :
                       error.signal("Invalid Character: '" + ch + "'");
                 }

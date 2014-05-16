@@ -21,7 +21,8 @@ public class Dcls {
     void genC(PW pw){
         for( Variable v : arrayVariable ){
             if(v.getSize()==0){
-                pw.println(v.getType().getCname()+ " " + v.getName()+ " ;");
+                pw.println(v.getType().getCname()+ " " + v.getName()+";");
+                
             }else{
                 pw.println(v.getType().getCname() +" "+  v.getName()+ "["+ v.getSize()+"];");
             }
