@@ -94,7 +94,7 @@ public class Lexer {
         keywordsTable.put( "FUNCTION", Symbol.FUNCTION );
         keywordsTable.put( "PROCEDURE", Symbol.PROCEDURE );
         keywordsTable.put( "DO", Symbol.DO );
-        keywordsTable.put( "ENDWILE", Symbol.ENDWHILE);
+        keywordsTable.put( "ENDWHILE", Symbol.ENDWHILE);
         keywordsTable.put( "RETURN", Symbol.RETURN );
         keywordsTable.put( "WRITELN", Symbol.WRITELN);
         keywordsTable.put( "MOD", Symbol.MOD);
@@ -105,6 +105,7 @@ public class Lexer {
         keywordsTable.put("OF", Symbol.OF);
         keywordsTable.put("ASPAS", Symbol.ASPAS);
         keywordsTable.put("CHARACTER", Symbol.CHARACTER);
+        keywordsTable.put("WHILE", Symbol.WHILE);
        
      }
 
@@ -128,7 +129,7 @@ public class Lexer {
           if ( input[tokenPos] == '{' ) {
                 // comment found
               System.out.println("COMENTARIO ENCONTRADO");
-               while ( input[tokenPos] != '\0'&& input[tokenPos] != '}' )
+               while ( input[tokenPos] != '\0' && input[tokenPos] != '}' )
                  tokenPos++;
                nextToken();
                }

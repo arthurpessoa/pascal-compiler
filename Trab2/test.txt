@@ -4,6 +4,7 @@ x,y,z : integer;
 re : char;
 vetor : ARRAY [3..10] OF integer;
 BEGIN
+read (x,y,re);
 write(x);
 x := 10;
 if x>=y then
@@ -11,5 +12,9 @@ write('verdadeiro');
 else
 write('falso');
 endif
+while x<y do
+write('enquanto isso');
+writeln('Numa terra tao tao distante');
+endwhile
 END
 .

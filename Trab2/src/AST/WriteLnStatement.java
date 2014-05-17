@@ -1,5 +1,4 @@
 package AST;
-
 public class WriteLnStatement extends Statement {
     
     public WriteLnStatement( ExprList expr ) {
@@ -10,25 +9,39 @@ public class WriteLnStatement extends Statement {
        
         int size = expr.getSize();
         int i;
+        
         Expr e = null;
-       
+        pw.print("printf(\"");
         for(i=0;i<size;i++){
             e = expr.getElement(i);
             if ( e.getType() == Type.charType ) {
-                pw.print("printf(\"%c\\n\", ");
+                pw.print("%c");
             }else{
                 if(e.getType() == Type.stringType){
-                    pw.print("printf(\"%s\\n\", ");
+                    pw.print("%s");
                 }else{
                     if(e.getType() == Type.integerType)
-                        pw.print("printf(\"%d\\n\", ");
+                        pw.print("%d");
                     else
-                        pw.print("printf(\"%f\\n\", ");
+                        if(e.getType() == Type.realType)
+                            pw.print("%f");
+                        else
+                            if(e.getType() == Type.sentenceType)
+                                e.genC(pw, true);
                 }   
             }
-            e.genC(pw, false);
+            if(i<size-1)
+                pw.print(",");
         }
-        pw.out.println(" );");
+        pw.print("\\n\"");
+        for(i=0;i<size;i++){
+            e = expr.getElement(i);
+            if(e.getType()!=Type.sentenceType){
+                pw.print(",");
+                e.genC(pw, false);       
+            }
+        }
+        pw.out.println(");");
     }
     
     

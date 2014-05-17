@@ -297,8 +297,11 @@ public class Compiler {
         lexer.nextToken();
         return new CompositeStatement(st);
     }
-
+    //subdcls ::= subdcl | subdcls subdcl
+//subdcl ::= subhead ';' body ';'
+//subhead ::= FUNCTION pid args ':' stdtype | PROCEDURE pid args
     private Subdcls subdcls() {
+        
        return null;
     }
 
@@ -309,7 +312,8 @@ public class Compiler {
         
         while ( (tk = lexer.token) != Symbol.END && 
                 tk != Symbol.ELSE &&
-                tk != Symbol.ENDIF) {
+                tk != Symbol.ENDIF &&
+                tk != Symbol.ENDWHILE) {
             astatement = stmt();
             if(astatement != null){
                 v.add(astatement);  
@@ -339,12 +343,13 @@ public class Compiler {
         
     }
     private Statement elstmt(){
-        
         switch(lexer.token){
             case BEGIN:
                 return compstmt();
             case WRITE:
                 return writeStatement();
+            case WRITELN:
+                return writeLnStatement();
             case READ:
                 return readStatement();
             case IDENT:
@@ -359,11 +364,11 @@ public class Compiler {
                             return new AssignmentStatement(v,e);
                     }
                 }else{
-                    error.signal("Variavel não declarada");
+                    error.signal("Variavel não declarada "+lexer.getStringValue());
                 }
                 break;
             default:
-                error.signal(lexer.getStringValue()+" Comando inválido");
+                error.signal(lexer.token+" Comando inválido");
                 break;
         }
         return null;
@@ -485,14 +490,19 @@ public class Compiler {
         if(lexer.token == Symbol.ASPAS){
             lexer.nextToken();
             SentenceExpr s = null;
-            s = new SentenceExpr(lexer.getStringValue());
-            lexer.nextToken();
+            StringBuffer sentence = new StringBuffer();
+            while(lexer.token !=Symbol.ASPAS && lexer.token!=Symbol.EOF){
+                sentence.append(lexer.getStringValue());
+                sentence.append(" ");
+                lexer.nextToken();
+            }
+            s = new SentenceExpr(sentence.toString());
             if(lexer.token == Symbol.ASPAS){      
                 //lexer.nextToken();
                 return s;
             }
             else
-                error.signal("Aspas não fechadas");
+                error.signal("Aspas não fechadas "+lexer.getStringValue());
         }
         return null;
     }
@@ -524,13 +534,78 @@ public class Compiler {
         }
         return null;
     }
-
+    //WHILE expr DO stmt ENDWHILE
     private Statement whileStmt() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(lexer.token == Symbol.WHILE){
+            lexer.nextToken();
+            Expr whilePart = expr();
+            //lexer.nextToken();
+            if(lexer.token != Symbol.DO)
+                error.signal("Comando DO não encontrado "+lexer.token);
+                lexer.nextToken();
+                StatementList doPart = stmts();
+                //lexer.nextToken();
+                if(lexer.token != Symbol.ENDWHILE)
+                    error.signal("Comando while deve encerrar com ENDWHILE");
+                lexer.nextToken();
+                return new WhileStatement(whilePart, doPart);
+                
+            
+        }
+        return null;
+    }
+    //READ '(' vbllist ')'
+    private Statement readStatement() {
+        if(lexer.token == Symbol.READ){
+            lexer.nextToken();
+            if(lexer.token != Symbol.LEFTPAR)
+                error.signal("'(' faltando");
+            lexer.nextToken();
+            ArrayList<Variable> var = vblist();
+            if(lexer.token != Symbol.RIGHTPAR)
+                error.signal("')' faltando  "+lexer.token);
+            lexer.nextToken();
+            return new ReadStatement(var);
+        }
+        return null;
     }
 
-    private Statement readStatement() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private ArrayList<Variable> vblist() {
+        ArrayList<Variable> var = new ArrayList<>();
+        Variable v = null;
+        while(lexer.token == Symbol.IDENT){
+            v = (Variable)symbolTable.getInLocal(lexer.getStringValue());
+            if(v==null)
+                error.signal("Variável "+lexer.getStringValue()+" não declarada");
+            var.add(v);
+            lexer.nextToken();
+            if(lexer.token != Symbol.COMMA && lexer.token != Symbol.RIGHTPAR)
+                error.signal("Variaveis devem ser separadas por ','   "+lexer.token);
+            if(lexer.token != Symbol.RIGHTPAR)
+                lexer.nextToken();
+        }
+        return var;
+    }
+
+    private Statement writeLnStatement() {
+        lexer.nextToken();
+        if(lexer.token != Symbol.LEFTPAR){
+            error.show("'(' faltando");
+            lexer.skipBraces();
+        }else{
+            lexer.nextToken();
+        }
+        ExprList e = exprList();
+        
+        if(lexer.token != Symbol.RIGHTPAR){
+            error.show("')' faltando");
+            lexer.skipBraces();
+            lexer.skipToNextStatement();
+            return null;
+        }else{
+            lexer.nextToken();
+            return new WriteLnStatement(e);
+        }
     }
 }
 

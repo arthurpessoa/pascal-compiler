@@ -12,9 +12,6 @@ public class WriteStatement extends Statement {
         
         Expr e = null;
         pw.print("printf(\"");
-        
-        int j = pw.currentIndent;
-        pw.set(0);
         for(i=0;i<size;i++){
             e = expr.getElement(i);
             if ( e.getType() == Type.charType ) {
@@ -39,13 +36,12 @@ public class WriteStatement extends Statement {
         pw.print("\"");
         for(i=0;i<size;i++){
             e = expr.getElement(i);
-            if(e.getType()!=Type.sentenceType)
-                e.genC(pw, false);
-            if(i+1<size)
+            if(e.getType()!=Type.sentenceType){
                 pw.print(",");
+                e.genC(pw, false);       
+            }
         }
         pw.out.println(");");
-        pw.set(j);
     }
     
     
