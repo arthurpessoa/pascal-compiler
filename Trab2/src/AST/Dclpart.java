@@ -6,23 +6,32 @@
 
 package AST;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 /**
  *
  * @author JoaoEduardo
  */
 public class Dclpart {
     
-    public Dclpart(Dcls dcls, Subdcls subdcls){
+    public Dclpart(Dcls dcls, ArrayList<Subdcls> subdcls){
         this.dcls = dcls;
         this.subdcls = subdcls;
     }
     
     public void genC( PW pw ) {
+        
         dcls.genC(pw);
-        //subdcls.genC(pw);
+        Subdcls s = null;
+        Iterator e = subdcls.iterator();
+        while(e.hasNext()){
+            s=(Subdcls)e.next();
+            s.genC(pw);
+        }
     }
     
     private Dcls dcls;
-    private Subdcls subdcls;
+    private ArrayList<Subdcls> subdcls;
     
 }

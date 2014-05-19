@@ -10,12 +10,12 @@ abstract public class Subdcls {
         return name;
     }
     
-    public void setParamList( ParamList paramList ) {
-        this.paramList = paramList;
+    public void setParamList( Dcls dcls ) {
+        this.dcls = dcls;
     }
     
-    public ParamList getParamList() {
-        return paramList;
+    public Dcls getParamList() {
+        return dcls;
     }
     
     public void setLocalVarList( LocalVarList localVarList ) {
@@ -30,7 +30,7 @@ abstract public class Subdcls {
     protected String name;
     protected LocalVarList localVarList;
     protected Body body;
-    protected ParamList paramList;
+    protected Dcls dcls;
     protected Subhead subhead;
     
 }

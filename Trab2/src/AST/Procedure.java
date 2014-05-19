@@ -2,7 +2,7 @@ package AST;
 
 import java.io.*;
 
-public class Procedure extends Subroutine {
+public class Procedure extends Subdcls {
     
     public Procedure( String name ) {
         this.name = name;
@@ -10,13 +10,13 @@ public class Procedure extends Subroutine {
     
     public void genC( PW pw ) {
         pw.out.print("void " + name + "(");
-        if ( paramList != null ) 
-          paramList.genC(pw);
+        if ( dcls != null ) 
+          dcls.genC(pw);
         pw.out.println(") {");
         pw.add();
         if ( localVarList != null ) 
           localVarList.genC(pw);
-        compositeStatement.getStatementList().genC(pw);
+        body.genC(pw);
         pw.sub();
         pw.out.println("}");
     }

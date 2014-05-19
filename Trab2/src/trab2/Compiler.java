@@ -137,14 +137,16 @@ public class Compiler {
      //dclpart ::= VAR dcls | subdcls | VAR dcls subdcls
      private Dclpart dclpart(){
          Dcls dcls = null;
-         Subdcls subdcls = null;
+         ArrayList<Subdcls> subdcls = new ArrayList<>();
          lexer.nextToken();
          
          if(lexer.token == Symbol.VAR){
              lexer.nextToken();
              dcls = dcls();
          }
-         subdcls = subdcls();
+         while(lexer.token == Symbol.PROCEDURE ||
+               lexer.token == Symbol.FUNCTION)
+            subdcls.add(subdcls());
          Dclpart dclpart = new Dclpart(dcls,subdcls);
          return dclpart;
      }
@@ -301,8 +303,16 @@ public class Compiler {
 //subdcl ::= subhead ';' body ';'
 //subhead ::= FUNCTION pid args ':' stdtype | PROCEDURE pid args
     private Subdcls subdcls() {
-        
-       return null;
+       
+        if(lexer.token == Symbol.FUNCTION){
+            lexer.nextToken();
+            return subFunction();
+        }
+        if(lexer.token == Symbol.PROCEDURE){
+            lexer.nextToken();
+            return subProcedure();
+        }
+        return null;
     }
 
     private StatementList stmts() {
@@ -606,6 +616,45 @@ public class Compiler {
             lexer.nextToken();
             return new WriteLnStatement(e);
         }
+    }
+    //subdcl ::= subhead ';' body ';'
+    //subhead ::= FUNCTION pid args ':' stdtype | PROCEDURE pid args
+    private Function subFunction() {
+        if(lexer.token!=Symbol.IDENT)
+            error.signal("Identificados esperado");
+        String name = (String) lexer.getStringValue();
+        Function s = (Function) symbolTable.getInGlobal(name);
+        if(s!= null)
+            error.show("Função "+name+" já foi declarada");
+        lexer.nextToken();
+        s = new Function(name);
+        symbolTable.putInGlobal(name, s);
+        if(lexer.token != Symbol.LEFTPAR){
+            error.show("'(' esperado");
+            lexer.skipBraces();
+        }else{
+            lexer.nextToken();
+        }
+        s.setParamList(dcls());
+        if(lexer.token != Symbol.RIGHTPAR){
+            error.show("')' esperado "+lexer.token);
+            lexer.skipBraces();
+        }else{
+            lexer.nextToken();
+        }
+        if(lexer.token != Symbol.COLON){
+            error.show(": esperado "+lexer.token);
+            lexer.skipPunctuation();
+        }else{
+            lexer.nextToken();
+        }
+        ((Function ) s).setReturnType( type() );
+        s.setBody(body());
+        return s;
+    }
+
+    private Subdcls subProcedure() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
 

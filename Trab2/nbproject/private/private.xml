@@ -4,16 +4,12 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Function.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Subroutine.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/WhileStatement.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/SentenceType.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/Lexer/Symbol.java</file>
+            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/ReadStatement.java</file>
             <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Subdcls.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/WriteStatement.java</file>
+            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Procedure.java</file>
             <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/trab2/Compiler.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/WriteLnStatement.java</file>
+            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/Dclpart.java</file>
             <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/Lexer/Lexer.java</file>
-            <file>file:/C:/Users/JoaoEduardo/Documents/NetBeansProjects/Trab2/src/AST/SentenceExpr.java</file>
         </group>
     </open-files>
 </project-private>
