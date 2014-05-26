@@ -80,7 +80,7 @@ public class Lexer {
         keywordsTable.put( "ELSE", Symbol.ELSE );
         keywordsTable.put( "ENDIF", Symbol.ENDIF );
         keywordsTable.put( "READ", Symbol.READ );
-        keywordsTable.put( "WRITE", Symbol.WRITE );
+        keywordsTable.put( "W   RITE", Symbol.WRITE );
         keywordsTable.put( "INTEGER", Symbol.INTEGER );
         keywordsTable.put( "BOOLEAN", Symbol.BOOLEAN );
         keywordsTable.put( "CHAR", Symbol.CHAR );

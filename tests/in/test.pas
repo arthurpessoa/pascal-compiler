@@ -1,9 +1,5 @@
 PROGRAM teste;
-Var
-x,y,z : integer;
-re : char;
-frase : string;
-vetor : ARRAY [3..10] OF integer;
+
 
 function fatorial( n : integer; ) : integer
   begin
@@ -29,15 +25,7 @@ procedure print( a, b : integer; ch : string; )
   end
 
 BEGIN
-read (x,y,re);
-print(0, 1,frase);
-y := 10;
-if x>=y then
-	write('verdadeiro');
-endif;
-while x<y do
-  write('enquanto isso');
-  writeln('Numa terra tao tao distante');
-endwhile
+	Write(fatorial(5));
+	print(1,2,'a');
 END
 .
