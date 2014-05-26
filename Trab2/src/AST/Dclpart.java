@@ -21,8 +21,13 @@ public class Dclpart {
     }
     
     public void genC( PW pw ) {
+       
+        if(dcls != null)
+         dcls.genC(pw);
         
-        dcls.genC(pw);
+    }
+    
+    public void gen(PW pw){
         Subdcls s = null;
         Iterator e = subdcls.iterator();
         while(e.hasNext()){

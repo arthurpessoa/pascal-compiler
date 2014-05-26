@@ -17,9 +17,15 @@ public class Body {
         this.compstmt = compstmt;
     }
     
+    public void gen(PW pw){
+        dclpart.gen(pw);
+    }
+    
     public void genC( PW pw ) {
-        dclpart.genC(pw);
-        compstmt.genC(pw);
+        if(dclpart != null)
+            dclpart.genC(pw);
+        if(compstmt != null)
+            compstmt.genC(pw);
     }
     
     private Dclpart dclpart;

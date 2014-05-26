@@ -13,6 +13,7 @@ public class Program {
         
         pw.out.println("#include <stdio.h>");
         pw.out.println();
+        body.gen(pw);
         pw.println("void "+programName+"() {");
         
         pw.add();

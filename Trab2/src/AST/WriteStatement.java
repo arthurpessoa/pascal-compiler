@@ -12,6 +12,7 @@ public class WriteStatement extends Statement {
         
         Expr e = null;
         pw.print("printf(\"");
+        
         for(i=0;i<size;i++){
             e = expr.getElement(i);
             if ( e.getType() == Type.charType ) {

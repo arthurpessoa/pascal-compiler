@@ -1,4 +1,7 @@
 package AST;
+
+import java.util.Iterator;
+
 public class WriteLnStatement extends Statement {
     
     public WriteLnStatement( ExprList expr ) {
@@ -12,6 +15,7 @@ public class WriteLnStatement extends Statement {
         
         Expr e = null;
         pw.print("printf(\"");
+        
         for(i=0;i<size;i++){
             e = expr.getElement(i);
             if ( e.getType() == Type.charType ) {

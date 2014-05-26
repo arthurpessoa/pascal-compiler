@@ -74,6 +74,7 @@ public class Compiler {
     private Lexer lexer;
     private CompilerError error;
     private int size;
+    private int isFunction = 0;
     
       // keeps a pointer to the current function being compiled
     private Function currentFunction;
@@ -112,6 +113,7 @@ public class Compiler {
             lexer.nextToken();
 
             if(lexer.token == Symbol.SEMICOLON){
+                lexer.nextToken();
                  program = new Program(programName, body());
                  //lexer.nextToken();
             }else{
@@ -132,27 +134,27 @@ public class Compiler {
          CompositeStatement compstmt = compstmt();
          //lexer.nextToken();
          Body body = new Body(dclpart, compstmt);
+         //symbolTable.removeLocalIdent();
          return body;
      }
      //dclpart ::= VAR dcls | subdcls | VAR dcls subdcls
      private Dclpart dclpart(){
          Dcls dcls = null;
          ArrayList<Subdcls> subdcls = new ArrayList<>();
-         lexer.nextToken();
-         
          if(lexer.token == Symbol.VAR){
              lexer.nextToken();
              dcls = dcls();
          }
          while(lexer.token == Symbol.PROCEDURE ||
-               lexer.token == Symbol.FUNCTION)
+               lexer.token == Symbol.FUNCTION){
             subdcls.add(subdcls());
+         }
          Dclpart dclpart = new Dclpart(dcls,subdcls);
          return dclpart;
      }
      //dcls ::= dcl | dcls dcl
      private Dcls dcls(){
-        ArrayList<Variable> varList = new ArrayList<Variable>();
+        ArrayList<Variable> varList = new ArrayList<>();
         
         dcl(varList);
         while ( lexer.token == Symbol.IDENT )
@@ -167,7 +169,6 @@ public class Compiler {
          ArrayList<Variable> lastVarList = new ArrayList<>();
          
          while(true){
-             
              if(lexer.token == Symbol.NUMBER){
                  error.show("Identificador não pode iniciar com Números ");
                  lexer.nextToken();
@@ -210,7 +211,6 @@ public class Compiler {
              v.setSize(size);
              varList.add(v);
          }
-         
          if(lexer.token!=Symbol.SEMICOLON)
              error.signal("Simbolo ';' faltando");
          
@@ -305,10 +305,12 @@ public class Compiler {
     private Subdcls subdcls() {
        
         if(lexer.token == Symbol.FUNCTION){
+            isFunction = 1;
             lexer.nextToken();
             return subFunction();
         }
         if(lexer.token == Symbol.PROCEDURE){
+            isFunction = 0;
             lexer.nextToken();
             return subProcedure();
         }
@@ -323,7 +325,8 @@ public class Compiler {
         while ( (tk = lexer.token) != Symbol.END && 
                 tk != Symbol.ELSE &&
                 tk != Symbol.ENDIF &&
-                tk != Symbol.ENDWHILE) {
+                tk != Symbol.ENDWHILE
+                ) {
             astatement = stmt();
             if(astatement != null){
                 v.add(astatement);  
@@ -335,6 +338,7 @@ public class Compiler {
                      lexer.nextToken();
                 }
             }   
+           
         }
         return new StatementList(v);
     }
@@ -342,16 +346,29 @@ public class Compiler {
 //	| IF expr THEN stmt [ ELSE stmt ] ENDIF
 //	| WHILE expr DO stmt ENDWHILE
     private Statement stmt(){
-        switch(lexer.token){
-            case IF:
-                return ifStmt();
-            case WHILE:
-                return whileStmt();
-            default:
-                return elstmt();
+        Statement s = elstmt();
+        if(s == null){
+            switch(lexer.token){
+                case IF:
+                    return ifStmt();
+                case WHILE:
+                    return whileStmt();
+                default:
+                    error.signal(lexer.token+" Comando inválido");
+                    break;
+            }
         }
-        
+        return s;
     }
+    //elstmt ::= vbl ':=' expr
+//	| RETURN expr /* in a function */
+//	| RETURN      /* in a procedure */
+//	| procfunc 	  /* should be procedure */
+//	| compstmt
+//	| READ '(' vbllist ')'
+//	| WRITE '(' exprlist ')'
+//	| WRITELN '(' exprlist ')'
+//	| WRITELN '(' ')'
     private Statement elstmt(){
         switch(lexer.token){
             case BEGIN:
@@ -363,8 +380,11 @@ public class Compiler {
             case READ:
                 return readStatement();
             case IDENT:
-                Variable v = (Variable ) symbolTable.getInLocal( lexer.getStringValue() );
-                if(v!=null){
+                if (symbolTable.getInGlobal(lexer.getStringValue()) instanceof Procedure){   
+                    return procedureCall();
+                }
+                Variable v = (Variable) symbolTable.getInLocal(lexer.getStringValue());
+                if(v!=null){   
                     lexer.nextToken();
                     if(lexer.token == Symbol.ASSIGN){ 
                         lexer.nextToken();
@@ -377,9 +397,11 @@ public class Compiler {
                     error.signal("Variavel não declarada "+lexer.getStringValue());
                 }
                 break;
+            case RETURN:
+                    return returnAssignment();
             default:
-                error.signal(lexer.token+" Comando inválido");
-                break;
+                return null;
+              
         }
         return null;
     }
@@ -434,7 +456,6 @@ public class Compiler {
     private Expr expr() {
         Expr left, right;
         left = simexp();
-        lexer.nextToken();
         Symbol s;
         if(lexer.token == Symbol.EQ || lexer.token == Symbol.LT
                 || lexer.token == Symbol.GT || lexer.token == Symbol.LE
@@ -453,13 +474,24 @@ public class Compiler {
 //unary ::=  '+' | '-' | NOT
     private Expr simexp() {
         Expr left;
+        Symbol s ;
+        Expr right;
         if(lexer.token == Symbol.PLUS || lexer.token == Symbol.MINUS || lexer.token == Symbol.NOT){
-            Symbol s = lexer.token;
+            s = lexer.token;
             lexer.nextToken();
-            Expr right = term();
+             right = term();
             return new CompositeExpr(null,s,right);
         }else{
             left = term();        
+        }
+        //lexer.nextToken();
+        if(lexer.token == Symbol.PLUS || lexer.token == Symbol.MINUS ||
+                lexer.token == Symbol.OR){
+            s = lexer.token;
+            lexer.nextToken();
+            right = term();
+            //lexer.nextToken();
+            return new CompositeExpr(left,s,right);
         }
         return left;
     }
@@ -474,47 +506,18 @@ public class Compiler {
 //vbl ::= id | id '[' expr ']'
 //vbllist ::= vbl | vbllist ',' vbl
     private Expr term() {
-        if(lexer.token == Symbol.NUMBER){
-            NumberExpr n = new NumberExpr(lexer.getNumberValue());
-            return n;
-        }
-        if(lexer.token == Symbol.IDENT){
-            Expr x = null;
-            Symbol s = null;
-            Variable v = (Variable ) symbolTable.getInLocal( lexer.getStringValue() );
-            if( v ==null){
-                error.signal("Variavel "+lexer.getStringValue() +" não declarada");
-            }
-            Type t = v.getType();          
-            if(t == Type.integerType){
-                x = new IntExpr(lexer.getStringValue());  
-            }
-            if(t == Type.stringType){
-                x = new StringExpr(lexer.getStringValue());  
-            }
-            if(t == Type.charType)
-                x = new CharExpr(lexer.getStringValue());
-            return x;
-            
-        }
-        if(lexer.token == Symbol.ASPAS){
+        Expr left = factor();
+        lexer.nextToken();
+        if(lexer.token == Symbol.MULT || lexer.token==Symbol.DIV || lexer.token == Symbol.DIVI||
+                lexer.token == Symbol.AND || lexer.token == Symbol.MOD){
+            Symbol s = lexer.token;
             lexer.nextToken();
-            SentenceExpr s = null;
-            StringBuffer sentence = new StringBuffer();
-            while(lexer.token !=Symbol.ASPAS && lexer.token!=Symbol.EOF){
-                sentence.append(lexer.getStringValue());
-                sentence.append(" ");
-                lexer.nextToken();
-            }
-            s = new SentenceExpr(sentence.toString());
-            if(lexer.token == Symbol.ASPAS){      
-                //lexer.nextToken();
-                return s;
-            }
-            else
-                error.signal("Aspas não fechadas "+lexer.getStringValue());
+            Expr right = factor();
+            lexer.nextToken();
+            return new CompositeExpr(left,s,right);
+        }else{
+            return left;
         }
-        return null;
     }
     //IF expr THEN stmt [ ELSE stmt ] ENDIF
     private Statement ifStmt() {
@@ -531,12 +534,14 @@ public class Compiler {
                 if(lexer.token == Symbol.ELSE){
                     lexer.nextToken();
                     sElse = stmt();
+                    System.out.println("SAINDO DO ELSE "+lexer.token);
                     lexer.nextToken();                    
                 }
                 if(lexer.token == Symbol.ENDIF){
+                    lexer.nextToken();
                     return new IfStatement(e,sThen,sElse);
                 }else{
-                    error.signal("Faltando a expressão ENDIF");
+                    error.signal("Faltando a expressão ENDIF "+lexer.token);
                 }
             }else{
                 error.signal("Faltando a expressão THEN");
@@ -550,8 +555,9 @@ public class Compiler {
             lexer.nextToken();
             Expr whilePart = expr();
             //lexer.nextToken();
-            if(lexer.token != Symbol.DO)
+            if(lexer.token != Symbol.DO){
                 error.signal("Comando DO não encontrado "+lexer.token);
+            }
                 lexer.nextToken();
                 StatementList doPart = stmts();
                 //lexer.nextToken();
@@ -582,7 +588,7 @@ public class Compiler {
 
     private ArrayList<Variable> vblist() {
         ArrayList<Variable> var = new ArrayList<>();
-        Variable v = null;
+        Variable v;
         while(lexer.token == Symbol.IDENT){
             v = (Variable)symbolTable.getInLocal(lexer.getStringValue());
             if(v==null)
@@ -621,13 +627,13 @@ public class Compiler {
     //subhead ::= FUNCTION pid args ':' stdtype | PROCEDURE pid args
     private Function subFunction() {
         if(lexer.token!=Symbol.IDENT)
-            error.signal("Identificados esperado");
+            error.signal("Nome da função esperada");
         String name = (String) lexer.getStringValue();
-        Function s = (Function) symbolTable.getInGlobal(name);
+        Function s  =  (Function) symbolTable.getInGlobal(name);
         if(s!= null)
-            error.show("Função "+name+" já foi declarada");
+            error.show("Função "+name+" não foi declarada");
         lexer.nextToken();
-        s = new Function(name);
+        s = currentFunction = new Function(name);
         symbolTable.putInGlobal(name, s);
         if(lexer.token != Symbol.LEFTPAR){
             error.show("'(' esperado");
@@ -654,7 +660,207 @@ public class Compiler {
     }
 
     private Subdcls subProcedure() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(lexer.token!=Symbol.IDENT)
+            error.signal("Nome da função esperada");
+        String name = (String) lexer.getStringValue();
+        Procedure s  =  (Procedure) symbolTable.getInGlobal(name);
+        if(s!= null)
+            error.show("Procedure "+name+" não foi declarada");
+        lexer.nextToken();
+        s  = new Procedure(name);
+        symbolTable.putInGlobal(name, s);
+        if(lexer.token != Symbol.LEFTPAR){
+            error.show("'(' esperado");
+            lexer.skipBraces();
+        }else{
+            lexer.nextToken();
+        }
+        s.setParamList(dcls());
+        if(lexer.token != Symbol.RIGHTPAR){
+            error.show("')' esperado "+lexer.token);
+            lexer.skipBraces();
+        }else{
+            lexer.nextToken();
+        }
+       
+        s.setBody(body());
+        return s;
+    }
+
+    private ReturnStatement returnAssignment() {
+      
+        lexer.nextToken();
+        if(isFunction == 1){
+            Expr e = expr();
+            if( currentFunction.getReturnType() != e.getType())
+                error.signal("Retorno não tem o mesmo tipo da função");
+            return new ReturnStatement(e);
+        }
+        return null;
+    }
+    //procfunc ::= pid '(' ')' | pid '(' exprlist ')'
+    private Subdcls procFunc() {
+        String pid = lexer.getStringValue();
+        lexer.nextToken();
+        if(lexer.token != Symbol.LEFTPAR)
+            error.signal("'(' esperado");
+        lexer.nextToken();
+        ExprList e;
+        e = exprList();
+        if(lexer.token != Symbol.RIGHTPAR)
+            error.signal("')' esperado "+lexer.token);
+        lexer.nextToken();
+        return new ProcFunc(pid,e);
+    }
+//factor ::= vbl
+//      |''' . ''' *qualquer conjunto de caracteres entre ' ' (aspas simples).
+//	| num
+//	| '(' expr ')'
+//	| procfunc /* should be FUNCTION */
+    private Expr factor() {
+        if(lexer.token == Symbol.NUMBER){
+            NumberExpr n = new NumberExpr(lexer.getNumberValue());
+            return n;
+        }
+        if(lexer.token == Symbol.IDENT){
+            Expr x = null;
+            Symbol s = null;
+            
+            if( symbolTable.getInGlobal( lexer.getStringValue()) instanceof Function){
+                return functionCall();
+            }
+            Variable v = (Variable ) symbolTable.getInLocal( lexer.getStringValue() );
+            Type t = v.getType();          
+            if(t == Type.integerType){
+                x = new IntExpr(lexer.getStringValue());  
+            }
+            if(t == Type.stringType){
+                x = new StringExpr(lexer.getStringValue());  
+            }
+            if(t == Type.charType)
+                x = new CharExpr(lexer.getStringValue());
+            return x;
+            
+        }
+        if(lexer.token == Symbol.ASPAS){
+            lexer.nextToken();
+            Expr s = null;
+            StringBuffer sentence = new StringBuffer();
+            int counter = 0;
+            while(lexer.token !=Symbol.ASPAS && lexer.token!=Symbol.EOF){
+                sentence.append(lexer.getStringValue());
+                sentence.append(" ");
+                lexer.nextToken();
+                counter++;
+            }
+            if(counter == 1){
+                s = new CharExpr(sentence.toString());
+            }else{
+                s = new SentenceExpr(sentence.toString());
+            }
+            if(lexer.token == Symbol.ASPAS){      
+                return s;
+            }else{
+                error.signal("Aspas não fechadas "+lexer.getStringValue());
+            }
+        }
+        return null;
+    }
+
+    private Statement procedureCall() {
+        ExprList e = null;
+        String pid = (String) lexer.getStringValue();
+        lexer.nextToken();
+        Procedure p = (Procedure) symbolTable.getInGlobal(pid);
+        if ( lexer.token != Symbol.LEFTPAR ) {
+          error.show("( expected");
+          lexer.skipBraces();
+        }else
+            lexer.nextToken();
+        
+        if(lexer.token != Symbol.RIGHTPAR){
+            e = checkParams(p.getParamList());
+            if ( lexer.token != Symbol.RIGHTPAR )
+            error.show("Error in expression");
+          else
+            lexer.nextToken();
+        }else{
+            if ( p.getParamList() != null)
+                error.signal("Parameter expected");
+          lexer.nextToken();
+        }
+     return new ProcedureCall(p,e);   
+    }
+
+    private ExprList checkParams(Dcls paramList) {
+        ExprList anExprList;
+        boolean firstErrorMessage = true;
+        if ( lexer.token == Symbol.RIGHTPAR ) 
+          return null;
+        else{
+            Variable parameter;
+            int sizeParamList = paramList.getSize();
+            Iterator e = paramList.getParamList().iterator();
+            anExprList = new ExprList();
+            while(true){
+                parameter = (Variable) e.next();
+                System.out.println("Valor da variavel: "+parameter.getName().toString());
+                if(sizeParamList < 1 && firstErrorMessage){
+                    error.show("Wrong number of parameters in call");
+                    firstErrorMessage = false;
+                }
+                sizeParamList--;
+                Expr anExpr = expr();
+                if(parameter.getType() != anExpr.getType()){
+                    System.out.println("Tipo da variavel: "+parameter.getType().toString());
+                    System.out.println("Tipo da anExpr: "+(anExpr.getType().toString()));
+                    error.show("Tipos incompativeis");
+                }
+                anExprList.addElement(anExpr);
+                if(lexer.token == Symbol.COMMA)
+                    lexer.nextToken();
+                else
+                    break;
+            }
+            if(sizeParamList > 0 && firstErrorMessage)
+                error.show("Numero de parametros incompativel");
+            return anExprList;
+        }
+    }
+
+    private FunctionCall functionCall() {
+         // we already know the identifier is a function. So we 
+          // need not to check it again.
+        ExprList anExprList = null;
+        
+        String name = (String ) lexer.getStringValue();
+        lexer.nextToken();
+        Function p = (Function ) symbolTable.getInGlobal(name);
+        if(p==null){
+            error.signal("Função " +name+" não declarada");
+        }
+        if ( lexer.token != Symbol.LEFTPAR ) {
+          error.show("( expected");
+          lexer.skipBraces();
+        }
+        else
+          lexer.nextToken();
+        
+        if ( lexer.token != Symbol.RIGHTPAR ) {
+            // The parameter list is used to check if the arguments to the
+            // procedure have the correct types 
+          anExprList = checkParams(p.getParamList());
+          if ( lexer.token != Symbol.RIGHTPAR )
+            error.show("Error in expression");
+        }
+        else {
+            // semantic analysis
+            // does the procedure has no parameter ?
+          if ( p.getParamList() != null && p.getParamList().getSize() != 0 )
+            error.show("Parameter expected");
+          lexer.nextToken();
+        }
+        return new FunctionCall(p,anExprList);
     }
 }
 

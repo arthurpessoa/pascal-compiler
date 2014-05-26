@@ -70,7 +70,7 @@ public class Lexer {
      // this code will be executed only once for each program execution
     
  static {
-        keywordsTable = new Hashtable<String, Symbol>();
+        keywordsTable = new Hashtable<>();
         keywordsTable.put( "VAR", Symbol.VAR );
         keywordsTable.put( "PROGRAM", Symbol.PROGRAM);
         keywordsTable.put( "BEGIN", Symbol.BEGIN );
@@ -106,6 +106,9 @@ public class Lexer {
         keywordsTable.put("ASPAS", Symbol.ASPAS);
         keywordsTable.put("CHARACTER", Symbol.CHARACTER);
         keywordsTable.put("WHILE", Symbol.WHILE);
+        keywordsTable.put("PLUS", Symbol.PLUS);
+        keywordsTable.put("MULT", Symbol.MULT);
+        
        
      }
 
@@ -179,7 +182,7 @@ public class Lexer {
                       token = Symbol.MULT;
                       break;
                     case '/' :
-                      token = Symbol.DIV;
+                      token = Symbol.DIVI;
                       break;
                     case '%' :
                       token = Symbol.REMAINDER;

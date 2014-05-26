@@ -18,6 +18,13 @@ public class Dcls {
         this.arrayVariable = arrayVariable;
     }
     
+    public int getSize(){
+        return arrayVariable.size();
+    }
+    public ArrayList<Variable> getParamList(){
+        return arrayVariable;
+    }
+    
     void genC(PW pw){
         for( Variable v : arrayVariable ){
             if(v.getSize()==0){
