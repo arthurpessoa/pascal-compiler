@@ -20,7 +20,7 @@ public class Subhead {
         this.pid= pid;
     }
     public void genC( PW pw ) {
-        dcls.genC(pw);
+        dcls.genC(pw,false);
         
     }
 }

@@ -11,7 +11,6 @@ abstract public class Type {
     public static Type charType    = new CharType();
     public static Type realType    = new RealType();
     public static Type sentenceType = new SentenceType();
-    public static Type booleanType = new BooleanType();
     
     public String getName() {
         return name;

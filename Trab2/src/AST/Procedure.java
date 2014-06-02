@@ -11,7 +11,7 @@ public class Procedure extends Subdcls {
     public void genC( PW pw ) {
         pw.out.print("void " + name + "(");
         if ( dcls != null ) 
-          dcls.genC(pw);
+          dcls.genC(pw,true);
         pw.out.println(") {");
         pw.add();
         if ( localVarList != null ) 

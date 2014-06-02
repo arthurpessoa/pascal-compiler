@@ -76,7 +76,6 @@ public class Compiler {
     private int size;
     private int isFunction = 0;
     
-      // keeps a pointer to the current function being compiled
     private Function currentFunction;
     
      public Program compile( char []input, PrintWriter outError ) {
@@ -108,7 +107,7 @@ public class Compiler {
             if(lexer.token != Symbol.NUMBER){
                 programName = lexer.getStringValue();
             }else{
-                error.signal("Identificador não pode iniciar com um número");
+                error.signal("Nome do programa não pode iniciar com um número");
             }
             lexer.nextToken();
 
@@ -122,8 +121,11 @@ public class Compiler {
             if(lexer.token == Symbol.ENDPROG){
                 return program;
             }else{
-                error.signal("Programa deve encerrar com um '.'" + lexer.token.toString());
+                error.signal("Programa deve encerrar com um '.'");
             }
+        }else{
+            error.signal("Programas devem iniciar com o identificador PROGRAM.\n"
+                    + "Identificador encontrado: "+lexer.getStringValue());
         }
        return null;
      }
@@ -174,7 +176,8 @@ public class Compiler {
                  lexer.nextToken();
              }else{
                  if(lexer.token != Symbol.IDENT){
-                     error.signal("Identificador esperado");
+                     error.signal("Palavra "+lexer.token.toString() +" é reservada"
+                             + " e não pode ser usada como identificador");
                  }else{
                      String name = (String) lexer.getStringValue();
              lexer.nextToken();
@@ -198,7 +201,7 @@ public class Compiler {
          }
          
          if(lexer.token != Symbol.COLON){
-             error.signal("Símbolo ':' faltando");
+             error.signal("Nome da variavel deve ser seguido pelo simbolo ':'");
              lexer.skipPunctuation();
          }else{
              lexer.nextToken();
@@ -318,7 +321,7 @@ public class Compiler {
     }
 
     private StatementList stmts() {
-        Symbol tk=null;
+        Symbol tk;
         Statement astatement;
         ArrayList<Statement> v = new ArrayList<>();
         
@@ -354,7 +357,7 @@ public class Compiler {
                 case WHILE:
                     return whileStmt();
                 default:
-                    error.signal(lexer.token+" Comando inválido");
+                    error.signal("Identificador desconhecido: "+lexer.getStringValue());
                     break;
             }
         }
@@ -390,11 +393,16 @@ public class Compiler {
                         lexer.nextToken();
                         Expr e = expr();
                         //lexer.nextToken();
-                        if(e.getType() == v.getType())
+                        
+                        if(e.getType() == v.getType()){
                             return new AssignmentStatement(v,e);
+                        }
+                        else
+                            error.signal("Tipos incompativeis na atribuição");
                     }
                 }else{
-                    error.signal("Variavel não declarada "+lexer.getStringValue());
+                    error.signal("Identificador "+lexer.getStringValue()+" deve ser uma variavel ou uma procedure");
+                    
                 }
                 break;
             case RETURN:
@@ -429,7 +437,7 @@ public class Compiler {
     //exprlist ::= expr | exprlist ',' expr
     private ExprList exprList() {
         ExprList exList = new ExprList();
-        Expr e = null;
+        Expr e;
         do{
             e = expr();
             //lexer.nextToken();
@@ -480,6 +488,7 @@ public class Compiler {
             s = lexer.token;
             lexer.nextToken();
              right = term();
+             
             return new CompositeExpr(null,s,right);
         }else{
             left = term();        
@@ -491,7 +500,21 @@ public class Compiler {
             lexer.nextToken();
             right = term();
             //lexer.nextToken();
+            if(s==Symbol.PLUS){
+                if(left.getType() != right.getType()){
+                    if(left.getType()==Type.stringType || right.getType()==Type.stringType){
+                        error.signal("Tipos incompativeis");
+                    }
+                }
+            }else{
+                if(left.getType()==Type.stringType || left.getType()==Type.charType ||
+                        right.getType() == Type.stringType || right.getType()==Type.charType
+                        && s==Symbol.MINUS){
+                    error.signal("Operação incompativel com letras");
+                }
+            }
             return new CompositeExpr(left,s,right);
+            
         }
         return left;
     }
@@ -514,10 +537,15 @@ public class Compiler {
             lexer.nextToken();
             Expr right = factor();
             lexer.nextToken();
-            return new CompositeExpr(left,s,right);
-        }else{
-            return left;
+            if(left.getType() == right.getType()){
+                return new CompositeExpr(left,s,right);
+            }
+            else{
+                error.signal("Operacao com tipos incompativeis");
+            }
         }
+            return left;
+        
     }
     //IF expr THEN stmt [ ELSE stmt ] ENDIF
     private Statement ifStmt() {
@@ -534,7 +562,6 @@ public class Compiler {
                 if(lexer.token == Symbol.ELSE){
                     lexer.nextToken();
                     sElse = stmt();
-                    System.out.println("SAINDO DO ELSE "+lexer.token);
                     lexer.nextToken();                    
                 }
                 if(lexer.token == Symbol.ENDIF){
@@ -600,6 +627,9 @@ public class Compiler {
             if(lexer.token != Symbol.RIGHTPAR)
                 lexer.nextToken();
         }
+        if(var.isEmpty()){
+            error.signal("Nenhuma variável foi digitada");
+        }
         return var;
     }
 
@@ -622,6 +652,7 @@ public class Compiler {
             lexer.nextToken();
             return new WriteLnStatement(e);
         }
+        
     }
     //subdcl ::= subhead ';' body ';'
     //subhead ::= FUNCTION pid args ':' stdtype | PROCEDURE pid args
@@ -730,6 +761,8 @@ public class Compiler {
                 return functionCall();
             }
             Variable v = (Variable ) symbolTable.getInLocal( lexer.getStringValue() );
+            if(v==null)
+                error.signal("Identificador "+lexer.getStringValue()+" deve ser uma variavel ou uma função");
             Type t = v.getType();          
             if(t == Type.integerType){
                 x = new IntExpr(lexer.getStringValue());  
@@ -743,21 +776,11 @@ public class Compiler {
             
         }
         if(lexer.token == Symbol.ASPAS){
-            lexer.nextToken();
             Expr s = null;
-            StringBuffer sentence = new StringBuffer();
-            int counter = 0;
-            while(lexer.token !=Symbol.ASPAS && lexer.token!=Symbol.EOF){
-                sentence.append(lexer.getStringValue());
-                sentence.append(" ");
-                lexer.nextToken();
-                counter++;
-            }
-            if(counter == 1){
-                s = new CharExpr(sentence.toString());
-            }else{
+            StringBuffer sentence = lexer.getSentence();
+            lexer.nextToken();
+           
                 s = new SentenceExpr(sentence.toString());
-            }
             if(lexer.token == Symbol.ASPAS){      
                 return s;
             }else{
@@ -804,7 +827,6 @@ public class Compiler {
             anExprList = new ExprList();
             while(true){
                 parameter = (Variable) e.next();
-                System.out.println("Valor da variavel: "+parameter.getName().toString());
                 if(sizeParamList < 1 && firstErrorMessage){
                     error.show("Wrong number of parameters in call");
                     firstErrorMessage = false;
@@ -812,9 +834,13 @@ public class Compiler {
                 sizeParamList--;
                 Expr anExpr = expr();
                 if(parameter.getType() != anExpr.getType()){
-                    System.out.println("Tipo da variavel: "+parameter.getType().toString());
-                    System.out.println("Tipo da anExpr: "+(anExpr.getType().toString()));
-                    error.show("Tipos incompativeis");
+                    if(parameter.getType() != Type.stringType || anExpr.getType() != Type.sentenceType){
+                       
+                        error.show("Tipo da variavel esperado: "+parameter.getType().getCname()+"\n"
+                                + "Tipo da variavel digitada: "+anExpr.getType().getCname()+"\n"
+                                + "Tipos incompativeis");
+                    }
+                    
                 }
                 anExprList.addElement(anExpr);
                 if(lexer.token == Symbol.COMMA)

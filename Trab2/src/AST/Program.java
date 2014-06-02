@@ -12,15 +12,13 @@ public class Program {
     public void genC( PW pw ) {
         
         pw.out.println("#include <stdio.h>");
+        pw.out.println("#include <stdlib.h>");
         pw.out.println();
         body.gen(pw);
-        pw.println("void "+programName+"() {");
-        
-        pw.add();
-                 
-        pw.out.println("");
+        pw.println("int main(){");
+        pw.add();         
         body.genC(pw);
-        
+        pw.println("return 0;");
         pw.sub();
         pw.out.println("}");
     }                             

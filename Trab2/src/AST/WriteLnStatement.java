@@ -18,20 +18,20 @@ public class WriteLnStatement extends Statement {
         
         for(i=0;i<size;i++){
             e = expr.getElement(i);
-            if ( e.getType() == Type.charType ) {
-                pw.print("%c");
+            if ( e.getType() == Type.sentenceType ) {
+                e.genC(pw, false);
             }else{
                 if(e.getType() == Type.stringType){
-                    pw.print("%s");
+                    pw.out.print("%s");
                 }else{
                     if(e.getType() == Type.integerType)
-                        pw.print("%d");
+                        pw.out.print("%d");
                     else
                         if(e.getType() == Type.realType)
-                            pw.print("%f");
+                            pw.out.print("%f");
                         else
-                            if(e.getType() == Type.sentenceType)
-                                e.genC(pw, true);
+                            if(e.getType() == Type.charType)
+                                pw.print("%c");
                 }   
             }
             if(i<size-1)

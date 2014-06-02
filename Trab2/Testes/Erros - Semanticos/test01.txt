@@ -1,0 +1,44 @@
+PROGRAM teste;
+Var
+x,y,z : integer;
+re : char;
+frase : string;
+vetor : ARRAY [3..10] OF integer;
+
+function fatorial( n : integer; ) : integer
+  begin
+  if  n <= 1 
+  then
+    return 1;
+  else
+    return n*fatorial(n-1);
+  endif;
+  end
+
+procedure print( a, b : integer; ch : string; )
+  var i : integer;
+  begin
+  write(ch);
+  while i <= 5  do
+    write( a / b );
+    i := i + 1;
+    endwhile;
+  while i <= 50 do
+    i := i + 1;
+  endwhile;
+  end
+
+BEGIN
+  read (x,y,re);
+  x := fatorial(5);
+  print(0, 1,frase);
+  y := frase;
+  if x>=y then
+  	write('frase');
+  endif;
+  while x<y do
+    write('enquanto isso');
+    writeln('Numa terra tao tao distante');
+  endwhile
+END
+.

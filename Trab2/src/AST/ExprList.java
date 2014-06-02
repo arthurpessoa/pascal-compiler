@@ -37,7 +37,7 @@ public class ExprList {
         Iterator e = v.iterator();
         while ( e.hasNext() ) {
             
-            ((Expr ) e.next()).genC(pw, false);
+            ((Expr ) e.next()).genC(pw,true);
             if ( --size > 0 ) 
               pw.out.print(", ");
         }

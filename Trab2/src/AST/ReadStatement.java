@@ -11,33 +11,32 @@ public class ReadStatement extends Statement {
     public void genC( PW pw ) {
         Variable p;
         Iterator e = v.iterator();
-        int size = v.size();
-        PW writer =pw;
-        writer.set(0);
-        writer.print("scanf(\"");
+        pw.print("scanf(\"");
         while(e.hasNext()){
             p = (Variable) e.next();
+            
             if ( p.getType() == Type.charType ){ 
-                pw.print("%c ");
+                pw.out.print("%c");
             }else{
                 if(p.getType() == Type.integerType){
-                    pw.print("%d ");
+                    pw.out.print("%d");
                 }else{
                     if(p.getType() == Type.realType){
-                        pw.print("%f ");
+                        pw.out.print("%f");
                     }else{
-                        pw.print("%s ");
+                        pw.out.print("%s");
                     }
                 }
             } 
+            pw.out.print(" ");
         }
-        pw.print("\",");
+        pw.out.print("\",");
         e = v.iterator();
         while(e.hasNext()){
             p = (Variable)e.next();
-            pw.print("&"+p.getName());
+            pw.out.print("&"+p.getName());
             if(e.hasNext())
-                pw.print(",");
+                pw.out.print(",");
         }
         pw.println(");");
     }

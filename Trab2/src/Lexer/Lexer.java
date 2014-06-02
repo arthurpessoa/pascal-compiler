@@ -80,7 +80,7 @@ public class Lexer {
         keywordsTable.put( "ELSE", Symbol.ELSE );
         keywordsTable.put( "ENDIF", Symbol.ENDIF );
         keywordsTable.put( "READ", Symbol.READ );
-        keywordsTable.put( "W   RITE", Symbol.WRITE );
+        keywordsTable.put( "WRITE", Symbol.WRITE );
         keywordsTable.put( "INTEGER", Symbol.INTEGER );
         keywordsTable.put( "BOOLEAN", Symbol.BOOLEAN );
         keywordsTable.put( "CHAR", Symbol.CHAR );
@@ -114,7 +114,16 @@ public class Lexer {
 
      
      
-    
+    public StringBuffer getSentence(){
+        StringBuffer sentence = new StringBuffer();
+           //tokenPos++;
+            while(input[tokenPos] != '\'' && input[tokenPos]!= '\0'){ 
+                sentence.append(input[tokenPos]);
+                tokenPos++;                
+            }  
+           
+            return sentence;
+    }
     
     public void nextToken() {
         char ch;
@@ -131,9 +140,9 @@ public class Lexer {
         else
           if ( input[tokenPos] == '{' ) {
                 // comment found
-              System.out.println("COMENTARIO ENCONTRADO");
                while ( input[tokenPos] != '\0' && input[tokenPos] != '}' )
                  tokenPos++;
+               tokenPos++;
                nextToken();
                }
           else {
@@ -250,7 +259,10 @@ public class Lexer {
                       break;
                   
                     default :
-                      error.signal("Invalid Character: '" + ch + "'");
+                      StringBuffer ident = new StringBuffer();
+                        ident.append(ch);
+                        stringValue=ident.toString();
+                        break;
                 }
             }
           }

@@ -12,10 +12,10 @@ package AST;
  */
 public class SentenceType extends Type {
     public SentenceType() {
-        super("sentence");
+        super("string");
     }
     
    public String getCname() {
-      return "sentence";
+      return "string";
    }
 }

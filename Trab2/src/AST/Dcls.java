@@ -1,17 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 package AST;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
-/**
- *
- * @author JoaoEduardo
- */
 public class Dcls {
     
     public Dcls(ArrayList<Variable> arrayVariable){
@@ -25,15 +17,29 @@ public class Dcls {
         return arrayVariable;
     }
     
-    void genC(PW pw){
-        for( Variable v : arrayVariable ){
+    void genC(PW pw, boolean isParamList){
+        Iterator i = arrayVariable.iterator();
+        Variable v;
+        while(i.hasNext()){
+            v = (Variable)i.next();
+            if(isParamList){
+                if(v.getSize()==0){
+                    pw.print(v.getType().getCname()+ " " + v.getName());
+                }else{
+                    pw.print(v.getType().getCname() +" "+  v.getName()+ "["+ v.getSize()+"]");
+                }
+                if(i.hasNext()){
+                    pw.print(",");
+                }
+            }else{
             if(v.getSize()==0){
                 pw.println(v.getType().getCname()+ " " + v.getName()+";");
-                
             }else{
                 pw.println(v.getType().getCname() +" "+  v.getName()+ "["+ v.getSize()+"];");
             }
+             
         }
+       }
     }
     
     private ArrayList<Variable> arrayVariable;

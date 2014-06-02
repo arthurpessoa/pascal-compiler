@@ -19,8 +19,8 @@ public class CompositeExpr extends Expr {
     
     public Type getType() {
           // left and right must be the same type
-       
-            return Type.integerType;
+            
+            return left.getType();
     }
     
     private Expr left, right;

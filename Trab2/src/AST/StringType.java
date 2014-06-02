@@ -12,10 +12,10 @@ package AST;
  */
 public class StringType extends Type {
     public StringType() {
-        super("string");
+        super("String");
     }
     
    public String getCname() {
-      return "string";
+      return "String";
    }
 }

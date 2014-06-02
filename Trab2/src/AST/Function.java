@@ -20,7 +20,7 @@ public class Function extends Subdcls {
         
        pw.out.print(returnType.getCname() + " " + name + "(");
         if ( dcls != null ) 
-          dcls.genC(pw);
+          dcls.genC(pw, true);
         pw.out.println(") {");
         pw.add();
         if ( localVarList != null ) 

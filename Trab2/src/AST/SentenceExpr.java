@@ -7,7 +7,10 @@ public class SentenceExpr extends Expr {
     }
     
     public void genC( PW pw, boolean putParenthesis  ) {
-        pw.out.print(value);
+        if(putParenthesis)
+            pw.out.print("\""+value+"\"");
+        else
+            pw.out.print(value);
     }
     
     public String getValue() {
