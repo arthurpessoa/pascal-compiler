@@ -1,7 +1,0 @@
-Problemas
-
-Não aceita underline e ! dentro de aspas simples
-Não aceita underline no nome do programa
-Aceita read(), e a saida fica printf("",); não deveria ser apenas printf(""); ?
-{ comentários } não funcionam
-olhe o ultimo exemplo ele tá bizarro :S
